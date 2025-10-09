@@ -1,4 +1,4 @@
-export const popular_artists = [
+[
   {
     "id": "06HL4z0CvFAxyc27GXpf02",
     "name": "Taylor Swift"
