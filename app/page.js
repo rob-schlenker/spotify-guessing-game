@@ -11,36 +11,6 @@ import { OBSCURE_ARTISTS } from "@/data/obscureArtists";
 import { popular_artists } from "@/data/popularArtists";
 import Dither from "@/components/ui/background.jsx";
 
-// ---- Artist Pools by Difficulty ---- //
-const TIER_EASY = [
-  "3TVXtAsR1Inumwj472S9r4", // Drake
-  "06HL4z0CvFAxyc27GXpf02", // Taylor Swift
-  "6eUKZXaKkcviH0Ku9w2n3V", // Ed Sheeran
-  "1uNFoZAHBGtllmzznpCI3s", // Justin Bieber
-  "66CXWjxzNUsdJxJ2JdwvnR", // Ariana Grande
-];
-const TIER_MED = [
-  "4dpARuHxo51G3z768sgnrY", // Adele
-  "04gDigrS5kc9YWfZHwBETP", // Maroon 5
-  "7dGJo4pcD2V6oG8kP0tJRR", // Eminem
-  "5pKCCKE2ajJHZ9KAiaK11H", // Rihanna
-  "1RyvyyTE3xzB2ZywiAwp0i", // Future
-];
-const TIER_HARD = [
-  "5WUlDfRSoLAfcVSX1WnrxN", // Sia
-  "0du5cEVh5yTK9QJze8zA0C", // Bruno Mars
-  "64KEffDW9EtZ1y2vBYgq8T", // Marshmello
-  "0hCNtLu0JehylgoiP8L4Gh", // Nicki Minaj
-  "2CIMQHirSU0MQqyYHq0eOx", // deadmau5 (less mainstream)
-];
-
-// Helper for difficulty scaling
-function getPool(round) {
-  if (round <= 3) return TIER_EASY;
-  if (round <= 7) return TIER_MED;
-  return TIER_HARD;
-}
-
 export default function GamePage() {
   const [artists, setArtists] = useState([]);
   const [score, setScore] = useState(0);
@@ -68,18 +38,6 @@ export default function GamePage() {
     const res = await fetch(`/api/artist?artistId=${id}`);
     return res.json();
   }
-
-  // for top artists
-  // async function startRound() {
-  //   setLoading(true);
-  //   setMessage("");
-  //   const pool = getPool(round);
-  //   const [aId, bId] = pool.sort(() => 0.5 - Math.random()).slice(0, 2);
-  //   const a = await fetchArtist(aId);
-  //   const b = await fetchArtist(bId);
-  //   setArtists([a, b]);
-  //   setLoading(false);
-  // }
 
   // const [artistPool, setArtistPool] = useState([...OBSCURE_ARTISTS]);
   const [artistPool, setArtistPool] = useState([...popular_artists]);
@@ -198,33 +156,41 @@ export default function GamePage() {
           value={(round / 10) * 100}
           className="w-full mb-3 h-3 bg-gray-800"
         />
-        <p className="text-gray-300 mb-4">
-          Round {round} / 10 — Score: {score}
+        <p
+          className="text-lg font-medium mb-4
+             bg-[#1C898355] px-4 py-1 rounded-full
+             text-white tracking-wide shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+        >
+          Round {round} / 10 — Score: {score}
         </p>
 
-        {loading ? (
-          <div className="flex items-center justify-center min-h-[280px]">
-            <LoadingSpinner />
-          </div>
-        ) : (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={round}
-              className="flex flex-wrap justify-center gap-10 min-h-[280px]" // 👈 fixed height
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {artists.map((artist, i) => (
-                <ArtistCard
-                  key={artist.id ?? i}
-                  artist={artist}
-                  onClick={() => handleGuess(i === 0 ? "a" : "b")}
-                />
-              ))}
-            </motion.div>
-          </AnimatePresence>
+        {!gameOver && (
+          <>
+            {loading ? (
+              <div className="flex items-center justify-center min-h-[280px]">
+                <LoadingSpinner />
+              </div>
+            ) : (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={round}
+                  className="flex flex-wrap justify-center gap-10 min-h-[280px]"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {artists.map((artist, i) => (
+                    <ArtistCard
+                      key={artist.id ?? i}
+                      artist={artist}
+                      onClick={() => handleGuess(i === 0 ? "a" : "b")}
+                    />
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            )}
+          </>
         )}
 
         <div className="h-10 flex items-center justify-center mt-6">
@@ -250,6 +216,22 @@ export default function GamePage() {
           </AnimatePresence>
         </div>
 
+        {/* {gameOver && (
+          <div className="flex justify-center mt-4 mb-10">
+            <motion.button
+              onClick={resetGame}
+              className="px-8 py-4 rounded-lg font-orbitron text-lg
+                 bg-gradient-to-r from-[#5B3D3D] via-[#1C8983] to-[#C2B93B]
+                 text-white shadow-[0_0_15px_rgba(255,255,255,0.3)]
+                 hover:scale-105 transition-transform"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              ▶  Start New Game
+            </motion.button>
+          </div>
+        )} */}
+
         {gameOver && (
           <motion.div
             className="relative mt-10 w-full rounded-lg p-[3px] bg-gradient-to-r from-[#5B3D3D] via-[#1C8983] to-[#C2B93B] 
@@ -264,10 +246,10 @@ export default function GamePage() {
                   <thead className="bg-gray-700 text-gray-300">
                     <tr>
                       <th className="px-3 py-2">#</th>
-                      <th className="px-3 py-2">Artist A</th>
-                      <th className="px-3 py-2">Listeners A</th>
-                      <th className="px-3 py-2">Artist B</th>
-                      <th className="px-3 py-2">Listeners B</th>
+                      <th className="px-3 py-2">Artist</th>
+                      <th className="px-3 py-2">Listeners</th>
+                      <th className="px-3 py-2">Artist</th>
+                      <th className="px-3 py-2">Listeners</th>
                       <th className="px-3 py-2">Correct?</th>
                     </tr>
                   </thead>
