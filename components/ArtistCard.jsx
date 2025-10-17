@@ -15,7 +15,9 @@ export default function ArtistCard({ artist, onClick }) {
   return (
     <motion.div
       className={`group w-60 text-center transition-transform ${
-        clicked ? "opacity-60 pointer-events-none" : "cursor-pointer hover:scale-105"
+        clicked
+          ? "opacity-60 pointer-events-none"
+          : "cursor-pointer hover:scale-105"
       }`}
       onClick={handleClick}
       initial={{ opacity: 0, y: 20 }}
@@ -49,15 +51,15 @@ export default function ArtistCard({ artist, onClick }) {
               bg-[#0d0d0d]
             "
           >
-                <img
-                  src={artist.images?.[0]?.url}
-                  alt={artist.name}
-                  className="
+            <img
+              src={artist.images?.[0]?.url}
+              alt={artist.name}
+              className="
                     h-full w-full object-cover
                     transition-transform duration-300
                     group-hover:scale-105
                   "
-                />
+            />
           </div>
         </div>
       </div>
